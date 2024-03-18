@@ -80,7 +80,7 @@ cd ${DD}
 ## https://www.ncbi.nlm.nih.gov/bioproject?LinkName=sra_bioproject&from_uid=5206312
 ## For class only do the 6 that you are assigned, delete the other 4 from this list
 
-#vdb-config --interactive
+vdb-config --interactive
 #fastq-dump -F --split-files SRR6819023
 
 fastq-dump -F --split-files SRR13308380
