@@ -56,7 +56,7 @@ REFD=$WD/DaphniaRefGenome          ## Example:/scratch/$MyID/PracticeRNAseq/Daph
 MAPD=$WD/Map_HiSat2           			## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2      #
 COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
 RESULTSD=/home/$MyID/PracticeRNAseq_Full/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
-REF=DaphniaPulex_RefGenome_PA42_v3.0                  ## This is what the "easy name" will be for the genome reference
+REF=GCF_001970005.1_Flounder_ref_guided_V1.0_genomic.fna                  ## This is what the "easy name" will be for the genome reference
 
 
 
@@ -197,8 +197,8 @@ mkdir -p $RESULTSD
 ##################  Prepare the Reference Index for mapping with HiSat2   #############################
 cd $REFD
 ### Copy the reference genome (.fasta) and the annotation file (.gff3) to this REFD directory
-cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.fasta .
-cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.gff3 .
+cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.fna .
+cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/genomic.gff .
 
 ###  Identify exons and splice sites on the reference genome
 gffread ${REF}.gff3 -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
