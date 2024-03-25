@@ -68,11 +68,11 @@ cd ${DD}
 ##################  Prepare the Reference Index for mapping with HiSat2   #############################
 cd $REFD
 ### Copy the reference genome (.fasta) and the annotation file (.gff3) to this REFD directory
-cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.fna .
-cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.gff .
+#cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.fna .
+#cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.gff .
 
 ###  Identify exons and splice sites on the reference genome
-gffread ${REF}.gff -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
+#gffread ${REF}.gff -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
 hisat2_extract_splice_sites.py ${REF}.gtf > ${REF}.ss
 hisat2_extract_exons.py ${REF}.gtf > ${REF}.exon
 
