@@ -205,7 +205,7 @@ hisat2_extract_splice_sites.py ${REF}.gtf > ${REF}.ss
 hisat2_extract_exons.py ${REF}.gtf > ${REF}.exon
 
 #### Create a HISAT2 index for the reference genome. NOTE every mapping program will need to build a its own index.
-hisat2-build --ss ${REF}.ss --exon ${REF}.exon ${REF}.fasta DpulPA42_index
+hisat2-build --ss ${REF}.ss --exon ${REF}.exon ${REF}.fna Flounder_index
 
 ########################  Map and Count the Data using HiSAT2 and StringTie  ########################
 
@@ -228,7 +228,7 @@ do
   ## HiSat2 is the mapping program
   ##  -p indicates number of processors, --dta reports alignments for StringTie --rf is the read orientation
    hisat2 -p 6 --dta --phred33       \
-    -x "${REFD}"/DpulPA42_index       \
+    -x "${REFD}"/Flounder_index       \
     -1 "${CD}"/"$i"_1_paired.fastq  -2 "${CD}"/"$i"_2_paired.fastq      \
     -S "$i".sam
 
