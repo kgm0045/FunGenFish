@@ -58,25 +58,26 @@ COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Cou
 RESULTSD=/home/$MyID/PracticeRNAseq_Full/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
 REF=GCF_001970005.1_Flounder_ref_guided_V1.0_genomic                  ## This is what the "easy name" will be for the genome reference
 
-## Make the directories and all subdirectories defined by the variables above
-mkdir -p $REFD
-mkdir -p $MAPD
-mkdir -p $COUNTSD
-mkdir -p $RESULTSD
+##  make the directories in SCRATCH for holding the raw data 
+## -p tells it to make any upper level directories that are not there.
+mkdir -p ${WD}
+mkdir -p ${DD}
+## move to the Data Directory
+cd ${DD}
 
 ##################  Prepare the Reference Index for mapping with HiSat2   #############################
 cd $REFD
 ### Copy the reference genome (.fasta) and the annotation file (.gff3) to this REFD directory
-cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.fasta .
-cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.gff3 .
+cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.fna .
+cp /home/${MyID}/class_shared/references/OliveFlounderRef/ncbi_dataset/data/${REF}.gff .
 
 ###  Identify exons and splice sites on the reference genome
-gffread ${REF}.gff3 -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
+gffread ${REF}.gff -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
 hisat2_extract_splice_sites.py ${REF}.gtf > ${REF}.ss
 hisat2_extract_exons.py ${REF}.gtf > ${REF}.exon
 
 #### Create a HISAT2 index for the reference genome. NOTE every mapping program will need to build a its own index.
-hisat2-build --ss ${REF}.ss --exon ${REF}.exon ${REF}.fasta DpulPA42_index
+hisat2-build --ss ${REF}.ss --exon ${REF}.exon ${REF}.fna Flounder_index
 
 ########################  Map and Count the Data using HiSAT2 and StringTie  ########################
 
@@ -99,7 +100,7 @@ do
   ## HiSat2 is the mapping program
   ##  -p indicates number of processors, --dta reports alignments for StringTie --rf is the read orientation
    hisat2 -p 6 --dta --phred33       \
-    -x "${REFD}"/DpulPA42_index       \
+    -x "${REFD}"/Flounder_index       \
     -1 "${CD}"/"$i"_1_paired.fastq  -2 "${CD}"/"$i"_2_paired.fastq      \
     -S "$i".sam
 
@@ -119,16 +120,21 @@ do
   ### Original: This will make transcripts using the reference geneome as a guide for each sorted.bam
   ### eAB options: This will run stringtie once and  ONLY use the Ref annotation for counting readsto genes and exons 
   
-mkdir "${COUNTSD}"/"$i"
-stringtie -p 6 -e -B -G  "${REFD}"/"${REF}".gtf -o "${COUNTSD}"/"$i"/"$i".gtf -l "$i"   "${MAPD}"/"$i"_sorted.bam
+
+	######################  Step 3b  Counting  		################
+
+	mkdir "${COUNTSD}"/"$i"
+	stringtie -p 6 -e -B -G  "${REFD}"/"${REF}".gtf -o "${COUNTSD}"/"$i"/"$i".gtf -l "$i"   "${MAPD}"/"$i"_sorted.bam
 
 done<list
+
 
 #####################  Copy Results to home Directory.  These will be the files you want to bring back to your computer.
 ### these are your stats files from Samtools
 cp *.txt ${RESULTSD}
 
-### The prepDE.py is a python script that converts the files in your ballgown folder to a count matrix. 
+
+### The prepDE.py is a python script that converts the files in your ballgown folder to a count matrix that can be used for other programs like DESeq2. 
  ## Move to the counts directory
 cd ${COUNTSD}
  ## run the python script prepDE.phy to prepare you data for downstream analysis.
