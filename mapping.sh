@@ -44,7 +44,7 @@ set -x
 MyID=aubclsc0331          ## Example: MyID=aubtss
 
 
-WD=/scratch/$MyID/PracticeRNAseq_Full_Script            ## Example:/scratch/$MyID/PracticeRNAseq  
+WD=/scratch/$MyID/PracticeRNAseq_Full            ## Example:/scratch/$MyID/PracticeRNAseq  
 DD=$WD/RawData
 RDQ=RawDataQuality
 adapters=AdaptersToTrim_All.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
