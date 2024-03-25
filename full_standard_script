@@ -44,7 +44,7 @@ set -x
 MyID=aubclsc0331          ## Example: MyID=aubtss
 
 
-WD=/scratch/$MyID/PracticeRNAseq_Full_Script            ## Example:/scratch/$MyID/PracticeRNAseq  
+WD=/scratch/$MyID/PracticeRNAseq_Full            ## Example:/scratch/$MyID/PracticeRNAseq  
 DD=$WD/RawData
 RDQ=RawDataQuality
 adapters=AdaptersToTrim_All.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
@@ -57,8 +57,6 @@ MAPD=$WD/Map_HiSat2           			## Example:/scratch/$MyID/PracticeRNAseq/Map_Hi
 COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
 RESULTSD=/home/$MyID/PracticeRNAseq_Full/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
 REF=GCF_001970005.1_Flounder_ref_guided_V1.0_genomic                  ## This is what the "easy name" will be for the genome reference
-
-
 
 ##  make the directories in SCRATCH for holding the raw data 
 ## -p tells it to make any upper level directories that are not there.
