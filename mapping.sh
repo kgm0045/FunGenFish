@@ -1,35 +1,27 @@
-#!/bin/sh
- 
+#! /bin/bash
+
 ######### FunGen Course Instructions ############
-## Purpose: The purpose of this script is to 
-##    Use HiSat2 to index your reference genome and then map your cleaned (paired) reads to the indexed reference
-##              First need to use gffread to convert annotation file from .gff3 to .gft formate
-##              Use Stringtie to count the reads mapped to genes and transcripts, defined in this case by the genome annotation file
-##              use the python script to take the Stringtie results to make two counts matricies, one at the gene level and one at the transcript level
-## HiSat2  Indexing   InPut: Reference genome file (.fasta), and annotation file (.gff3) (Optional)
-##                    Output: Indexed genome 
-## HiSat2 Mapping     Input: Cleaned read files, paired (.fasq); Indexed genome
-##                    Output: Alignment .sam files  
-## Samtools  Convert .sam to .bam and sort          Input: Alignment files,  .sam
-##                                                  Output: Sorted  .bam files
-## Stringtie  Counting reads  Input: sorted .bam file
-##                            Output:  Directories of counts files for Ballgown (R program for DGE)
-##              prepDE.py    Python script to create a counts matrics from the Stringtie output.  Inputs: Directory from Stringtie
-##                                                                                                Output:  .csv files of counts matrix
+## Purpose: The purpose of this script is to run the full RNAseq pipeline
 ## For running the script on the Alabama Super Computer.
-##  For more information: https://hpcdocs.asc.edu/content/slurm-queue-system
-##  After you have this script in your home directory and you have made it executable using  "chmod +x [script name]", 
-##  then run the script by using "run_script [script name]"
-##  suggested paramenters are below to submit this script.
-##    queue: class or medium
-##    core: 6
-##    time limit (HH:MM:SS): 04:00:00 
-##    Memory: 12gb
-##    
+##	For more information: https://hpcdocs.asc.edu/content/slurm-queue-system
+## 	After you have this script in your home directory and you have made it executable using  "chmod +x [script name]", 
+## 	then run the script by using "run_script [script name]"
+## 	suggested paramenters are below to submit this script.
+##  You may need to increase these for bigger datasets
+## 		queue: medium
+##		core: 6
+##		time limit (HH:MM:SS): 18:00:00 
+##		Memory: 12gb
+##		
 ###############################################
 
-#### Load all the programs you are going to use in this script.
+
+########## Load Modules
 source /apps/profiles/modules_asax.sh.dyn
+module load sra
+module load fastqc/0.10.1
+module load multiqc
+module load trimmomatic/0.39
 module load hisat2/2.2.0
 module load stringtie/2.2.1
 module load gcc/9.4.0
@@ -39,27 +31,32 @@ module load bcftools
 module load gffread
 #module load gffcompare
 
-
 #  Set the stack size to unlimited
 ulimit -s unlimited
 
 # Turn echo on so all commands are echoed in the output log
 set -x
 
+
 ##########  Define variables and make directories
 ## Replace the numbers in the brackets with Your specific information
   ## make variable for your ASC ID so the directories are automatically made in YOUR directory
-  ## Replace the [#] with paths to define these variable
-MyID=aubtss          ## Example: MyID=aubtss
+MyID=aubclsc0331          ## Example: MyID=aubtss
 
-WD=/scratch/$MyID/PracticeRNAseq            ## Example:/scratch/$MyID/PracticeRNAseq  
-CD=/scratch/$MyID/PracticeRNAseq/CleanData            ## Example:/scratch/$MyID/PracticeRNAseq/CleanData   #   *** This is where the cleaned paired files are located from the last script
-REFD=/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome          ## Example:/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome    # this directory contains the indexed reference genome for the garter snake
-MAPD=/scratch/$MyID/PracticeRNAseq/Map_HiSat2           ## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2      #
-COUNTSD=/scratch/$MyID/PracticeRNAseq/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
-RESULTSD=/home/$MyID/PracticeRNAseq/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
 
-REF=DaphniaPulex_RefGenome_PA42_v3.0                  ## This is what the "easy name" will be for the genome reference
+WD=/scratch/$MyID/PracticeRNAseq_Full_Script            ## Example:/scratch/$MyID/PracticeRNAseq  
+DD=$WD/RawData
+RDQ=RawDataQuality
+adapters=AdaptersToTrim_All.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
+				## In the future, for your data, you will likely need to edit this for other projects based on how your libraries 
+				## were made to search for the correct adapters for your project
+CD=$WD/CleanData            				## Example:/scratch/$MyID/PracticeRNAseq/CleanData   #   *** This is where the cleaned paired files are located from the last script
+PCQ=PostCleanQuality
+REFD=$WD/OliveFRef          ## Example:/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome    # this directory contains the indexed reference genome for the garter snake
+MAPD=$WD/Map_HiSat2           			## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2      #
+COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
+RESULTSD=/home/$MyID/PracticeRNAseq_Full/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
+REF=GCF_001970005.1_Flounder_ref_guided_V1.0_genomic                  ## This is what the "easy name" will be for the genome reference
 
 ## Make the directories and all subdirectories defined by the variables above
 mkdir -p $REFD
