@@ -194,7 +194,7 @@ set -x
 ## Replace the numbers in the brackets with Your specific information
   ## make variable for your ASC ID so the directories are automatically made in YOUR directory
   ## Replace the [#] with paths to define these variable
-  MyID=aubclsc0328
+  MyID=aubclsc0331
 
 WD=/scratch/$MyID/FinalProject           ## Example:/scratch/$MyID/PracticeRNAseq  
 CD=/scratch/$MyID/FinalProject/CleanData            ## Example:/scratch/$MyID/PracticeRNAseq/CleanData   #   *** This is where the cleaned paired f$
