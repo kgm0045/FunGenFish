@@ -2,8 +2,8 @@ source /apps/profiles/modules_asax.sh.dyn
 module load sra
 module load fastqc/0.10.1
 
-WD=/scratch/aubclsc0331/Final_Project
-DD=/scratch/aubclsc0331/Final_Project/RawData
+WD=/scratch/aubclsc0331/FinalProject
+DD=/scratch/aubclsc0331/FinalProject/RawData
 RDQ=RawDataQuality
  
 vdb-config --interactive
@@ -18,7 +18,7 @@ fastq-dump -F --split-files SRR13308393
 fastq-dump -F --split-files SRR13308392
 
 
-fastqc *.fastq --outdir=/scratch/aubclsc0331/Final_Project/RawDataQuality
+fastqc *.fastq --outdir=/scratch/aubclsc0331/FinalProject/RawDataQuality
 
-cd /scratch/aubclsc0331/Final_Project/RawDataQuality
+cd /scratch/aubclsc0331/FinalProject/RawDataQuality
 tar cvzf ${RDQ}.tar.gz  ${WD}/${RDQ}/*
