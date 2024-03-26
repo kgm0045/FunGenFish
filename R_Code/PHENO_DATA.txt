@@ -1,0 +1,9 @@
+
+	treatment	type
+SRR13308392	control	paired-end
+SRR13308380	control	paired-end
+SRR13308381	heat_stress	paired-end
+SRR13308382	heat_stress	paired-end
+SRR13308383	heat_stress	paired-end
+
+
