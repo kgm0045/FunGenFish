@@ -18,9 +18,9 @@ fastq-dump -F --split-files SRR13308393
 fastq-dump -F --split-files SRR13308392
 
 
-fastqc *.fastq --outdir=/scratch/aubclsc0331/PracticeRNAseq/RawDataQuality
+fastqc *.fastq --outdir=/scratch/aubclsc0331/Final_Project/RawDataQuality
 
-cd /scratch/aubclsc0331/PracticeRNAseq/RawDataQuality
+cd /scratch/aubclsc0331/Final_Project/RawDataQuality
 tar cvzf ${RDQ}.tar.gz  ${WD}/${RDQ}/*
 
 #2. CLEAN
@@ -102,21 +102,20 @@ cp /home/${MyID}/class_shared/AdaptersToTrim_All.fa .
 while read i
 do
 
-        ### Run Trimmomatic in paired end (PE) mode with 6 threads using phred 33 quality score format. 
+       ### Run Trimmomatic in paired end (PE) mode with 6 threads using phred 33 quality score format. 
         ## STOP & DISCUSS: Check out the trimmomatic documentation to understand the parameters in line 77
-        #From Brittany
-                 #/apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin$
-        java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin$
-        PE -threads 6 -phred33 \
-        "$i"_1.fastq "$i"_2.fastq  \
-        ${CD}/"$i"_1_paired.fastq  ${CD}/"$i"_2_paired.fastq  \
-        ILLUMINACLIP:AdaptersToTrim_All.fa:2:35:10 HEADCROP:10 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:36
+	       java -jar /apps/x86-64/apps/spack_0.19.1/spack/opt/spack/linux-rocky8-zen3/gcc-11.3.0/trimmomatic-0.39-iu723m2xenra563gozbob6ansjnxmnfp/bin/trimmomatic-0.39.jar   \
+					PE -threads 6 -phred33 \
+        	"$i"_1.fastq "$i"_2.fastq  \
+       	 ${CD}/"$i"_1_paired.fastq ${CD}/"$i"_1_unpaired.fastq  ${CD}/"$i"_2_paired.fastq ${CD}/"$i"_2_unpaired.fastq \
+       	 ILLUMINACLIP:AdaptersToTrim_All.fa:2:35:10 HEADCROP:10 LEADING:30 TRAILING:30 SLIDINGWINDOW:6:30 MINLEN:36
         
                 ## Trim read for quality when quality drops below Q30 and remove sequences shorter than 36 bp
-                ## PE for paired end phred-score-type  R1-Infile   R2-Infile  R1-Paired-outfile R1-unpaired-outfile R-Paired-outfile R2-unpaired-ou$
+                ## PE for paired end phred-score-type  R1-Infile   R2-Infile  R1-Paired-outfile R1-unpaired-outfile R-Paired-outfile R2-unpaired-outfile  Trimming paramenter
                 ## MINLEN:<length> #length: Specifies the minimum length of reads to be kept.
                 ## SLIDINGWINDOW:<windowSize>:<requiredQuality>  #windowSize: specifies the number of bases to average across  
                 ## requiredQuality: specifies the average quality required.
+
 
         ############## FASTQC to assess quality of the Cleaned sequence data
         ## FastQC: run on each of the data files that have 'All' to check the quality of the data
@@ -137,10 +136,7 @@ tar cvzf ${PCQ}.tar.gz ${WD}/${PCQ}/*
 ## when finished use scp or rsync to bring the .gz file to your computer and open the .html file to evaluate the quality of the data.
 
 
-
-
-
-3. MAPING
+#3. MAPING
 
 #!/bin/sh
  
@@ -216,7 +212,7 @@ cd $REFD
 
 
 ###  Identify exons and splice sites on the reference genome
-gffread Paralichthys_olivaceus.gff -T -o Paralichthys_olivaceus.gtf              ## gffread converts the annotation file from .gff3 to .gft formate$
+gffread genome.gff -T -o Paralichthys_olivaceus.gtf              ## gffread converts the annotation file from .gff3 to .gft formate$
 hisat2_extract_splice_sites.py Paralichthys_olivaceus.gtf > Paralichthys_olivaceus.ss
 hisat2_extract_exons.py Paralichthys_olivaceus.gtf> Paralichthys_olivaceus.exon
 
