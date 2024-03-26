@@ -1,0 +1,6 @@
+treatment type
+SRR13308380 A12L paired-end
+SRR13308381 A18L paired-end
+SRR13308382 A23L paired-end
+SRR13308383 A28L paired-end
+SRR13308392 C12L paired-end
