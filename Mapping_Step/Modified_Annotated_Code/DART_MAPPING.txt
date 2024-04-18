@@ -1,0 +1,139 @@
+#! /bin/bash
+
+########## LOAD MODULES ######################################################################################################
+source /apps/profiles/modules_asax.sh.dyn
+module load sra
+module load fastqc/0.10.1
+module load multiqc
+module load trimmomatic/0.39
+module load hisat2/2.2.0
+module load stringtie/2.2.1
+module load gcc/9.4.0
+module load python/3.10.8-zimemtc
+module load samtools
+module load bcftools
+module load gffread
+#module load gffcompare
+
+#  Set the stack size to unlimited
+ulimit -s unlimited
+# Turn echo on so all commands are echoed in the output log
+set -x
+
+##########  DEFINE VARIABLES & MAKE DIRECTORIES #############################################################################
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+MyID=aubclsc0311       #Make sure you change the number to your own id number  
+WD=/scratch/$MyID/FinalProject  # Make sure you change the "FinalProject" directory to whatever directory you ran your standard pipeline in           
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+DD=$WD/RawData
+RDQ=RawDataQuality
+adapters=AdaptersToTrim_All.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
+CD=$WD/CleanData                    
+PCQ=PostCleanQuality
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+REFD=$WD/Paralichthys_olivaceus_RefGenome  #Make sure you change this to the directory your animal genome is in
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   
+
+MAPD=$WD/Dart_Mapping                 
+COUNTSDART=/$WD/Counts_Dart_StringTie       
+RESULTSDART=/home/$MyID/Dart_Counts 
+
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+REF=GCF_001970005.1_Flounder_ref_guided_V1.0_genomic.fna #Change this to the file name of your animal genome                 
+REFA=genomic.gtf       #Change this to the file name of your annotation genome
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+mkdir -p $REFD
+mkdir -p $MAPD
+mkdir -p $COUNTSDART
+mkdir -p $RESULTSDART
+
+
+################### DOWNLOAD AND COMPILE DART MAPPER #########################################################################
+cd $MAPD  #Switches to directory where DART will be downloaded
+git clone https://github.com/hsinnan75/Dart.git #Downloads DART from GitHub
+DARTD=$MAPD/Dart #Sets variable for the new Dart directory thr download makes
+
+cd $DARTD #Switches to Dart directory, need to be here to run "make" to compile
+make #Compiles DART
+
+DARTB=$DARTD/bin #Makes variable for the directory in which the indexing and Dart commands are located
+
+
+
+################## INDEXING ##################################################################################################
+
+INDEX=$DARTD/index #Makes variable for a directory where the indexing files will be output
+mkdir -p $INDEX #Makes this indexing directory
+
+#Moves to directory where indexing and mapping commands are located
+cd $DARTB
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Creates a DART index for the reference genome. 
+## Make sure you change the "Paralichthys_index" part to whatever you want the prefix on your index files to be
+./bwt_index /${REFD}/${REF} /$INDEX/Paralichthys_index       
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+########################  DART MAPPING & COUNTING/STRINGTIE  ##################################################################
+
+# cp the list of unique ids from the original files to map
+## May need to change if the list file isn't in your clean data directory it might be in your mapping directory check your 
+### standard pipeline to see where it got moved to 
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+cp ${CD}/list  . 
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+## process the samples in the list, one by one using a while loop
+
+## DART is the mapping program
+##  -t is thread count, -i is index files, -f & -f2 are the paired fastq files, -o is the output format
+while read i;
+do
+   dart -t 6     \
+    -i "${INDEX}"/Paralichthys_index       \
+    -f "${CD}"/"$i"_1_paired.fastq  -f2 "${CD}"/"$i"_2_paired.fastq      \
+    -o "$i".sam
+
+    #view: convert the SAM file into a BAM file  -bS: BAM is the binary format corresponding to the SAM text format.
+  samtools view -@ 6 -bS "$i".sam > "$i".bam  
+
+    #This is sorting the bam, using 6 threads, and producing a .bam file that includes the word 'sorted' in the name
+    ##sort: convert the BAM file to a sorted BAM file.
+  samtools sort -@ 6  "$i".bam  -o  "$i"_sorted.bam
+
+    #Index the BAM and get mapping statistics, and put them in a text file for us to look at.
+  samtools flagstat   "$i"_sorted.bam   > "$i"_Stats.txt
+
+  ### Stringtie is the program that counts the reads that are mapped to each gene, exon, transcript model. 
+  ### The output from StringTie are counts folders in a directory that is ready to bring into the R program Ballgown to 
+  ### Original: This will make transcripts using the reference geneome as a guide for each sorted.bam
+
+	mkdir "${COUNTSDART}"/"$i"
+	stringtie -p 6 -e -B -G  "${REFD}"/"${REFA}" -o "${COUNTSDART}"/"$i"/"$i".gtf -l "$i"   "${DARTB}"/"$i"_sorted.bam
+
+
+done<list
+
+
+##################################### MOVE RESULTS TO HOME FOLDER ###########################################################
+
+# these are your stats files from Samtools
+cp *.txt ${RESULTSDART}
+
+
+### The prepDE.py is a python script that converts the files in your ballgown folder to a count matrix that can be used for other programs like DESeq2. 
+ ## Move to the counts directory
+cd ${COUNTSDART}
+ ## run the python script prepDE.phy to prepare you data for downstream analysis.
+cp /home/${MyID}/class_shared/prepDE.py3 .
+
+ prepDE.py3 -i ${COUNTSDART}
+
+### copy the final results files (the count matricies that are .cvs) to your home directory. 
+cp *.csv ${RESULTSDART}
+## move these results files to your personal computer for downstream statistical analyses in R studio.
+
