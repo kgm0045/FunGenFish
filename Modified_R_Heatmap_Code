@@ -1,0 +1,12 @@
+filtered_vsd <- vsd[!grepl("LOC", vsd@rowRanges@partitioning@NAMES, ignore.case = TRUE), ]
+  
+### Heatmap of the count matrix
+  #library("genefilter")
+  topVarGenes <- head(order(rowVars(assay(filtered_vsd)), decreasing = TRUE), 20)
+  
+  library("pheatmap")
+  mat  <- assay(filtered_vsd)[ topVarGenes, ]
+  mat  <- mat - rowMeans(mat)
+  anno <- as.data.frame(colData(filtered_vsd)[, c("treatment", "type")])
+  df <- as.data.frame(colData(dds)[,c("treatment","type")])
+    pheatmap(mat, annotation_col = anno, main=paste(pipeline, " Heatmap", sep= ""))
