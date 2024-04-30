@@ -223,7 +223,7 @@ do
   ## HiSat2 is the mapping program
   ##  -p indicates number of processors, --dta reports alignments for StringTie --rf is the read orientation
    hisat2 -p 6 --dta --phred33       \
-    -x "${REFD}"/XTropicales_index       \
+    -x "${REFD}"/Olive_Ref_Genome_index       \
     -1 "${CD}"/"$i"_1_paired.fastq  -2 "${CD}"/"$i"_2_paired.fastq      \
     -S "$i".sam
 
