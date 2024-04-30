@@ -44,19 +44,19 @@ set -x
 MyID=aubclsc0328         ## Example: MyID=aubtss
 
 
-WD=/scratch/$MyID/BW_WorkingDirectory            ## Example:/scratch/$MyID/PracticeRNAseq  
+WD=/scratch/$MyID/FinalProject            ## Example:/scratch/$MyID/PracticeRNAseq  
 DD=$WD/RawData
 RDQ=RawDataQuality
-adapters=TruSeq3-PE-2.fa  ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
+adapters=AdaptersToTrim_All.fa   ## This is a fasta file that has a list of adapters commonly used in NGS sequencing. 
 				## In the future, for your data, you will likely need to edit this for other projects based on how your libraries 
 				## were made to search for the correct adapters for your project
 CD=$WD/CleanData            				## Example:/scratch/$MyID/PracticeRNAseq/CleanData   #   *** This is where the cleaned paired files are located from the last script
 PCQ=PostCleanQuality
-REFD=/scratch/FISH/XTropicalisRefGenome          ## Example:/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome    # this directory contains the indexed reference genome for the garter snake
+REFD=/scratch/FISH/RefGenome          ## Example:/scratch/$MyID/PracticeRNAseq/DaphniaRefGenome    # this directory contains the indexed reference genome for the garter snake
 MAPD=$WD/Map_HiSat2           			## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2      #
 COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
 RESULTSD=/home/$MyID/Results_StringTieChanges/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
-REF=UCB_Xtro_10.0                  ## This is what the "easy name" will be for the genome reference
+REF=Olive_Ref_Genome                  ## This is what the "easy name" will be for the genome reference
 
 
 
@@ -140,7 +140,7 @@ ls | grep ".fastq" |cut -d "_" -f 1 | sort | uniq > list
 
 ### Copy over the list of Sequencing Adapters that we want Trimmomatic to look for (along with its default adapters)
         ## CHECK: You may need to edit this path for the file that is in the class_shared directory from your account.
-cp /home/${MyID}/TruSeq3-PE-2.fa . 
+cp /home/${MyID}/AdaptersToTrim_All.fa  . 
 
 ### Run a while loop to process through the names in the list and Trim them with the Trimmomatic Code
 while read i
@@ -193,9 +193,6 @@ mkdir -p $RESULTSD
 
 ##################  Prepare the Reference Index for mapping with HiSat2   #############################
 cd $REFD
-### Copy the reference genome (.fasta) and the annotation file (.gff3) to this REFD directory
-#cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.fasta .
-#cp /home/${MyID}/class_shared/references/DaphniaPulex/PA42/${REF}.gff3 .
 
 ###  Identify exons and splice sites on the reference genome
 #gffread ${REF}.gff3 -T -o ${REF}.gtf               ## gffread converts the annotation file from .gff3 to .gft formate for HiSat2 to use.
