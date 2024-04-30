@@ -56,7 +56,7 @@ REFD=/scratch/FISH/RefGenome          ## Example:/scratch/$MyID/PracticeRNAseq/D
 MAPD=$WD/Map_HiSat2           			## Example:/scratch/$MyID/PracticeRNAseq/Map_HiSat2      #
 COUNTSD=/$WD/Counts_StringTie       ## Example:/scratch/$MyID/PracticeRNAseq/Counts_StringTie
 RESULTSD=/home/$MyID/Results_StringTieChanges/Counts_H_S_2024      ## Example:/home/aubtss/PracticeRNAseq/Counts_H_S
-REF=OF_Ref_Genome                  ## This is what the "easy name" will be for the genome reference
+REF=Olive_Ref_Genome                 ## This is what the "easy name" will be for the genome reference
 
 
 
@@ -226,7 +226,7 @@ do
   ## HiSat2 is the mapping program
   ##  -p indicates number of processors, --dta reports alignments for StringTie --rf is the read orientation
    hisat2 -p 6 --dta --phred33       \
-    -x "${REFD}"/XTropicales_index       \
+    -x "${REFD}"/Olive_Ref_Genome_index       \
     -1 "${CD}"/"$i"_1_paired.fastq  -2 "${CD}"/"$i"_2_paired.fastq      \
     -S "$i".sam
 
